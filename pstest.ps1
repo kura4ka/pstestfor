@@ -1,27 +1,18 @@
 Add-Type -AssemblyName PresentationFramework
 
 function Show-Menu {
-    $choices = [System.Windows.MessageBoxButton]::YesNoCancel
-    $result = [System.Windows.MessageBox]::Show("Выберите действие:
-1. Точка восстановления
-2. Отключить автозагрузку
-3. Завершить ненужные процессы
-4. Установить драйверы
-5. Перезагрузка
-6. Восстановление системы", "Меню", "OKCancel")
-
     $menu = New-Object System.Windows.Forms.Form
-    $menu.Text = "Меню обслуживания"
+    $menu.Text = "System Maintenance Menu"
     $menu.Size = New-Object System.Drawing.Size(400,400)
     $menu.StartPosition = "CenterScreen"
 
     $buttons = @(
-        "Создать точку восстановления",
-        "Отключить автозагрузку",
-        "Завершить процессы",
-        "Установить драйверы",
-        "Перезагрузить",
-        "Восстановление системы"
+        "Create Restore Point",
+        "Disable Startup Programs",
+        "Kill Unnecessary Processes",
+        "Install Drivers",
+        "Restart System",
+        "System Restore"
     )
 
     for ($i = 0; $i -lt $buttons.Length; $i++) {
@@ -38,23 +29,23 @@ function Show-Menu {
 
 function Execute-Action($action) {
     switch ($action) {
-        "Создать точку восстановления" {
+        "Create Restore Point" {
             Check-RestoreEnabled
             CheckAndCreate-RestorePoint
         }
-        "Отключить автозагрузку" {
+        "Disable Startup Programs" {
             Disable-Autostart
         }
-        "Завершить процессы" {
+        "Kill Unnecessary Processes" {
             Kill-UnnecessaryProcesses
         }
-        "Установить драйверы" {
+        "Install Drivers" {
             Install-Drivers
         }
-        "Перезагрузить" {
+        "Restart System" {
             Restart-Computer -Force
         }
-        "Восстановление системы" {
+        "System Restore" {
             Start-Process "rstrui.exe"
         }
     }
@@ -69,8 +60,8 @@ function Check-RestoreEnabled {
 
 function CheckAndCreate-RestorePoint {
     Check-RestoreEnabled
-    Checkpoint-Computer -Description "Точка перед обслуживанием" -RestorePointType "MODIFY_SETTINGS"
-    [System.Windows.Forms.MessageBox]::Show("Точка восстановления создана.")
+    Checkpoint-Computer -Description "Pre-Maintenance Restore Point" -RestorePointType "MODIFY_SETTINGS"
+    [System.Windows.Forms.MessageBox]::Show("Restore point created successfully.")
 }
 
 function Disable-Autostart {
@@ -80,13 +71,13 @@ function Disable-Autostart {
                 Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name $_.PSChildName
             }
         }
-    [System.Windows.Forms.MessageBox]::Show("Автозагрузка отключена.")
+    [System.Windows.Forms.MessageBox]::Show("Startup programs disabled.")
 }
 
 function Kill-UnnecessaryProcesses {
     $safeList = @("explorer", "powershell", "System", "svchost", "lsass", "winlogon", "csrss", "smss", "services", "wininit", "taskhostw")
     Get-Process | Where-Object { $safeList -notcontains $_.Name -and $_.Id -ne $PID } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
-    [System.Windows.Forms.MessageBox]::Show("Ненужные процессы завершены.")
+    [System.Windows.Forms.MessageBox]::Show("Unnecessary processes terminated.")
 }
 
 function Install-Drivers {
@@ -104,7 +95,7 @@ function Install-Drivers {
         Start-Process $fileName -ArgumentList "/S" -Wait
     }
 
-    [System.Windows.Forms.MessageBox]::Show("Драйверы установлены.")
+    [System.Windows.Forms.MessageBox]::Show("Drivers installed successfully.")
 }
 
 Add-Type -AssemblyName System.Windows.Forms
